@@ -159,7 +159,8 @@
             transition: fill 0.2s ease, stroke 0.2s ease;
         }
 
-        .country:hover {
+        .country:hover,
+        .country.active {
             fill: var(--accent);
             stroke: var(--accent-stroke);
         }
@@ -294,7 +295,8 @@
         body.light .status-dot { background: var(--accent-light); }
         body.light main { background: #ffffff; }
         body.light .country { fill: var(--land-light); stroke: var(--land-light-stroke); }
-        body.light .country:hover { fill: var(--accent-light); stroke: var(--accent-light-dark); }
+        body.light .country:hover,
+        body.light .country.active { fill: var(--accent-light); stroke: var(--accent-light-dark); }
         body.light footer {
             background: #ffffff;
             color: #999;
@@ -962,7 +964,8 @@
                 });
 
                 country.addEventListener("mousemove", (e) => {
-                    if (hasTouched || isDragging) {
+                    if (hasTouched) return;
+                    if (isDragging) {
                         tooltip.classList.remove("visible");
                         return;
                     }
@@ -973,25 +976,33 @@
             // Touch tap (mobile) — tap country to show, tap elsewhere to dismiss
             let activeTooltipCountry = null;
 
+            function clearActiveCountry() {
+                if (activeTooltipCountry) {
+                    activeTooltipCountry.classList.remove("active");
+                    tooltip.classList.remove("visible");
+                    activeTooltipCountry = null;
+                }
+            }
+
             countries.forEach(country => {
                 country.addEventListener("touchend", (e) => {
                     if (dragMoved) return;
                     isDragging = false;
                     const touch = e.changedTouches[0];
                     if (activeTooltipCountry === country) {
-                        tooltip.classList.remove("visible");
-                        activeTooltipCountry = null;
+                        clearActiveCountry();
                     } else {
+                        clearActiveCountry();
                         activeTooltipCountry = country;
+                        country.classList.add("active");
                         showTooltip(country, touch.clientX, touch.clientY);
                     }
                 });
             });
 
             document.addEventListener("touchstart", (e) => {
-                if (activeTooltipCountry && !e.target.closest(".tooltip")) {
-                    tooltip.classList.remove("visible");
-                    activeTooltipCountry = null;
+                if (activeTooltipCountry && !e.target.closest(".tooltip") && !e.target.closest(".country")) {
+                    clearActiveCountry();
                 }
             });
 
