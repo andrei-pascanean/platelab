@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PlateSpotter - Interactive License Plate Map</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -785,6 +785,7 @@
 
             mapContainer.addEventListener("touchstart", (e) => {
                 lastTouchTime = Date.now();
+                hasTouched = true;
                 if (e.touches.length === 1) {
                     isDragging = true;
                     dragMoved = false;
@@ -946,20 +947,22 @@
                 positionTooltip(x, y);
             }
 
-            // Mouse hover (desktop)
+            // Mouse hover (desktop only — disabled once a touch is detected)
+            let hasTouched = false;
+
             countries.forEach(country => {
                 country.addEventListener("mouseenter", (e) => {
-                    if (isDragging || dragMoved || Date.now() - lastTouchTime < 500) return;
+                    if (hasTouched || isDragging || dragMoved) return;
                     showTooltip(country, e.clientX, e.clientY);
                 });
 
                 country.addEventListener("mouseleave", () => {
-                    if (Date.now() - lastTouchTime < 500) return;
+                    if (hasTouched) return;
                     tooltip.classList.remove("visible");
                 });
 
                 country.addEventListener("mousemove", (e) => {
-                    if (isDragging || Date.now() - lastTouchTime < 500) {
+                    if (hasTouched || isDragging) {
                         tooltip.classList.remove("visible");
                         return;
                     }
