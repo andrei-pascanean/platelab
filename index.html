@@ -47,6 +47,7 @@
             padding: 0;
             height: 100vh;
             height: 100dvh;
+            touch-action: manipulation;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -706,7 +707,11 @@
 
             resetView();
 
+            // Track last touch time to ignore synthetic mouse events on mobile
+            let lastTouchTime = 0;
+
             mapContainer.addEventListener("mousedown", (e) => {
+                if (Date.now() - lastTouchTime < 500) return;
                 isDragging = true;
                 dragMoved = false;
                 dragStartX = e.clientX;
@@ -779,6 +784,7 @@
             }
 
             mapContainer.addEventListener("touchstart", (e) => {
+                lastTouchTime = Date.now();
                 if (e.touches.length === 1) {
                     isDragging = true;
                     dragMoved = false;
@@ -943,16 +949,17 @@
             // Mouse hover (desktop)
             countries.forEach(country => {
                 country.addEventListener("mouseenter", (e) => {
-                    if (isDragging || dragMoved) return;
+                    if (isDragging || dragMoved || Date.now() - lastTouchTime < 500) return;
                     showTooltip(country, e.clientX, e.clientY);
                 });
 
                 country.addEventListener("mouseleave", () => {
+                    if (Date.now() - lastTouchTime < 500) return;
                     tooltip.classList.remove("visible");
                 });
 
                 country.addEventListener("mousemove", (e) => {
-                    if (isDragging) {
+                    if (isDragging || Date.now() - lastTouchTime < 500) {
                         tooltip.classList.remove("visible");
                         return;
                     }
