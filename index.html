@@ -689,16 +689,19 @@
                 // Don't allow zooming out beyond the full map
                 vbW = Math.min(vbW, SVG_W);
                 vbH = Math.min(vbH, SVG_H);
-                // Don't allow panning past the edges
+                // Allow panning past edges by a portion of the current view
+                // so edge countries can be centered on screen
+                const pad = vbW < SVG_W ? vbW * 0.4 : 0;
+                const padY = vbH < SVG_H ? vbH * 0.4 : 0;
                 if (vbW >= SVG_W) {
                     vbX = 0;
                 } else {
-                    vbX = Math.max(0, Math.min(vbX, SVG_W - vbW));
+                    vbX = Math.max(-pad, Math.min(vbX, SVG_W - vbW + pad));
                 }
                 if (vbH >= SVG_H) {
                     vbY = 0;
                 } else {
-                    vbY = Math.max(0, Math.min(vbY, SVG_H - vbH));
+                    vbY = Math.max(-padY, Math.min(vbY, SVG_H - vbH + padY));
                 }
             }
 
