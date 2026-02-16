@@ -3,6 +3,9 @@
 - [ ] Full content DD required to ensure the information is accurate
 - [ ] Iceland's description is inconsistent with its example
 - [ ] Make side pannel bigger with larger font size
+- [ ] Country should stay highlighted while side panel is open
+- [ ] difficult to click on microstates
+- [ ] some countries front and back are of different color.
 
 ## Features
 - [x] Add colorpicker for the highlight color
