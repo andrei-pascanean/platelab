@@ -1,6 +1,8 @@
 ## Bugs
 - [ ] Montenegro format display with MNE at the start
 - [ ] Full content DD required to ensure the information is accurate
+- [ ] Iceland's description is inconsistent with its example
+- [ ] Make side pannel bigger with larger font size
 
 ## Features
 - [x] Add colorpicker for the highlight color
@@ -10,16 +12,6 @@
 - [ ] Plate regex - search for a plate and it tells you what country it could be from
 - [ ] Recently spotted plates feed
 - [ ] Area code lookup in case there is one used
-- [ ] Add basic info to side panel:
-    - how to read:
-        - format explanation
-        - what alphabet is used
-        - what number or letter combinations cannot be used  
-    - metadata:
-        - year of introduction
-        - dimensions
-        - colors (strip, lettering, background color)
-        - typeface
-        - strip contents
-    - button to learn more that links to wiki page
+- [x] Add basic info to side panel:
+- [ ] Add button to learn more that links to wiki page on side panel
 - [ ] create your own license plate
