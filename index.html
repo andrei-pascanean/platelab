@@ -584,6 +584,35 @@
             color: #333;
         }
 
+        .panel-wiki-btn {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #ccc;
+            font-size: 13px;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .panel-wiki-btn:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        body.light .panel-wiki-btn {
+            background: rgba(0,0,0,0.04);
+            border-color: #ccc;
+            color: #555;
+        }
+        body.light .panel-wiki-btn:hover {
+            background: rgba(0,0,0,0.08);
+            border-color: var(--accent-light-dark);
+            color: #111;
+        }
+
         /* --- Mobile --- */
         @media (max-width: 768px) {
             .nav-logo { font-size: 1em; }
@@ -1261,6 +1290,12 @@
                 html += `<div class="panel-section"><div class="panel-section-title">History</div>`;
                 html += `<div class="panel-field"><div class="panel-field-label">Current format introduced</div><div class="panel-field-value">${pf.year_introduced}</div></div>`;
                 html += `</div>`;
+
+                // --- Wikipedia Link ---
+                if (pf.wikipedia_article) {
+                    const flag = code.replace(/./g, c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0)));
+                    html += `<a class="panel-wiki-btn" href="https://en.wikipedia.org/wiki/${pf.wikipedia_article}" target="_blank" rel="noopener">Learn more about ${flag} license plates</a>`;
+                }
 
                 return html;
             }

@@ -9,7 +9,7 @@
 - [x] Add colorpicker for the highlight color
 - [x] Add light mode
 - [x] Make mobile-friendly
-- [ ] Add black and white as highlight colors
+- [x] Add black and white as highlight colors
 - [ ] Plate regex - search for a plate and it tells you what country it could be from
 - [ ] Recently spotted plates feed
 - [ ] Area code lookup in case there is one used
