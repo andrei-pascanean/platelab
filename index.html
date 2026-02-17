@@ -34,6 +34,18 @@
             --land-light: #f0e0c0; --land-light-stroke: #e0d0a8;
             --land-dark: #302010; --land-dark-stroke: #50381a;
         }
+        body[data-accent="white"] {
+            --accent: #ffffff; --accent-stroke: #cccccc;
+            --accent-light: #ffffff; --accent-light-dark: #ffffff;
+            --land-light: #e0e0e0; --land-light-stroke: #cccccc;
+            --land-dark: #1a1a1a; --land-dark-stroke: #333333;
+        }
+        body[data-accent="black"] {
+            --accent: #000000; --accent-stroke: #333333;
+            --accent-light: #000000; --accent-light-dark: #000000;
+            --land-light: #d0d0d0; --land-light-stroke: #b0b0b0;
+            --land-dark: #0a0a0a; --land-dark-stroke: #1a1a1a;
+        }
 
         * {
             box-sizing: border-box;
@@ -263,6 +275,13 @@
             cursor: pointer;
             transition: transform 0.15s ease, border-color 0.15s ease;
             flex-shrink: 0;
+        }
+
+        .accent-dot[data-accent="white"] {
+            border-color: #555;
+        }
+        .accent-dot[data-accent="black"] {
+            border-color: #aaa;
         }
 
         .accent-dot:hover {
@@ -808,6 +827,8 @@
                     <span class="accent-dot" data-accent="blue" style="background:#44aaff;"></span>
                     <span class="accent-dot" data-accent="red" style="background:#ff5566;"></span>
                     <span class="accent-dot" data-accent="orange" style="background:#ffaa44;"></span>
+                    <span class="accent-dot" data-accent="white" data-mode="dark" style="background:#ffffff;"></span>
+                    <span class="accent-dot" data-accent="black" data-mode="light" style="background:#000000;"></span>
                 </div>
                 <button id="accent-toggle" title="Change accent color" style="font-size: 18px;">&#9679;</button>
             </div>
@@ -1109,14 +1130,30 @@
                 themeBtn.title = light ? "Switch to dark mode" : "Switch to light mode";
                 localStorage.setItem("theme", light ? "light" : "dark");
             }
-            themeBtn.addEventListener("click", () => setTheme(!document.body.classList.contains("light")));
+            themeBtn.addEventListener("click", () => {
+                const light = !document.body.classList.contains("light");
+                setTheme(light);
+                updateAccentDotVisibility();
+                const current = document.body.getAttribute("data-accent");
+                if (current === "white" && light) setAccent("black");
+                else if (current === "black" && !light) setAccent("white");
+            });
             setTheme(localStorage.getItem("theme") === "light");
 
             // --- Accent Color Drawer ---
-            const accentColors = { green: "#4ac685", blue: "#44aaff", red: "#ff5566", orange: "#ffaa44" };
+            const accentColors = { green: "#4ac685", blue: "#44aaff", red: "#ff5566", orange: "#ffaa44", white: "#ffffff", black: "#000000" };
             const accentBtn = document.getElementById("accent-toggle");
             const accentDrawer = document.getElementById("accent-drawer");
             const accentDots = accentDrawer.querySelectorAll(".accent-dot");
+
+            function updateAccentDotVisibility() {
+                const isLight = document.body.classList.contains("light");
+                accentDots.forEach(d => {
+                    const mode = d.dataset.mode;
+                    if (!mode) { d.style.display = ""; return; }
+                    d.style.display = (mode === "light" && isLight) || (mode === "dark" && !isLight) ? "" : "none";
+                });
+            }
 
             function setAccent(name) {
                 document.body.setAttribute("data-accent", name);
@@ -1141,7 +1178,13 @@
             // Close drawer when clicking elsewhere
             document.addEventListener("click", () => accentDrawer.classList.remove("open"));
 
-            setAccent(localStorage.getItem("accent") || "green");
+            // Validate saved accent against current theme
+            const savedAccent = localStorage.getItem("accent") || "green";
+            const isLight = document.body.classList.contains("light");
+            if (savedAccent === "white" && isLight) setAccent("black");
+            else if (savedAccent === "black" && !isLight) setAccent("white");
+            else setAccent(savedAccent);
+            updateAccentDotVisibility();
 
             // --- Country Panel ---
             const panel = document.getElementById("country-panel");
