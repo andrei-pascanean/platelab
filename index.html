@@ -1179,8 +1179,8 @@
             document.addEventListener("click", () => accentDrawer.classList.remove("open"));
 
             // Validate saved accent against current theme
-            const savedAccent = localStorage.getItem("accent") || "green";
             const isLight = document.body.classList.contains("light");
+            const savedAccent = localStorage.getItem("accent") || (isLight ? "black" : "white");
             if (savedAccent === "white" && isLight) setAccent("black");
             else if (savedAccent === "black" && !isLight) setAccent("white");
             else setAccent(savedAccent);
