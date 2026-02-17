@@ -49,6 +49,7 @@
 
         * {
             box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease;
         }
 
         body {
@@ -91,6 +92,42 @@
             display: flex;
             gap: 4px;
             margin-left: auto;
+            position: relative;
+        }
+
+        .nav-theme-toggle {
+            background: none;
+            border: none;
+            color: #e8e8e8;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: color 0.15s ease;
+        }
+        .nav-theme-toggle:hover {
+            color: #fff;
+        }
+        body.light .nav-theme-toggle {
+            color: #555;
+        }
+        body.light .nav-theme-toggle:hover {
+            color: #111;
+        }
+
+        .nav-tabs-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            transition: transform 0.25s ease, width 0.25s ease;
+            pointer-events: none;
+        }
+
+        body.light .nav-tabs-indicator {
+            background: rgba(0,0,0,0.08);
         }
 
         .nav-tab {
@@ -103,17 +140,17 @@
             padding: 6px 14px;
             border-radius: 4px;
             cursor: pointer;
-            transition: color 0.15s ease, background 0.15s ease;
+            transition: color 0.15s ease;
+            position: relative;
+            z-index: 1;
         }
 
         .nav-tab:hover {
             color: #ccc;
-            background: rgba(255,255,255,0.06);
         }
 
         .nav-tab.active {
             color: #e8e8e8;
-            background: rgba(255,255,255,0.1);
         }
 
         body.light .nav-tab {
@@ -121,11 +158,9 @@
         }
         body.light .nav-tab:hover {
             color: #333;
-            background: rgba(0,0,0,0.05);
         }
         body.light .nav-tab.active {
             color: #1a1a1a;
-            background: rgba(0,0,0,0.08);
         }
 
         .nav-status {
@@ -158,6 +193,8 @@
             overflow: hidden;
             position: relative;
             background: #0a0f0d;
+            display: flex;
+            flex-direction: column;
         }
 
         .map-container {
@@ -654,6 +691,90 @@
             color: #111;
         }
 
+        /* --- Views --- */
+        .view {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        .view.fading {
+            opacity: 0;
+        }
+
+        /* --- Workbench --- */
+        .workbench {
+            display: flex;
+            height: 100%;
+            background: #0a0a0a;
+        }
+        .workbench-controls {
+            flex: 2;
+            padding: 32px;
+            overflow-y: auto;
+        }
+        .workbench-preview {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid #2a2a2a;
+        }
+        .workbench-panel {
+            background: rgba(10,10,10,0.95);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 24px;
+        }
+        .workbench-panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #e8e8e8;
+            margin-bottom: 16px;
+        }
+        .workbench-placeholder {
+            color: #666;
+            font-size: 13px;
+        }
+        .plate-example {
+            display: flex;
+            background: #fff;
+            border: 2px solid #222;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .plate-strip {
+            background: #003399;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 6px;
+            gap: 2px;
+        }
+        .plate-strip-stars { font-size: 8px; }
+        .plate-strip-code { font-weight: 700; font-size: 12px; }
+        .plate-text {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: #111;
+            padding: 12px 20px;
+            letter-spacing: 0.1em;
+        }
+        body.light .workbench { background: #f5f5f5; }
+        body.light .workbench-preview { border-left-color: #ddd; }
+        body.light .workbench-panel {
+            background: rgba(255,255,255,0.95);
+            border-color: #ccc;
+        }
+        body.light .workbench-panel-title { color: #1a1a1a; }
+        body.light .workbench-placeholder { color: #999; }
+
         /* --- Mobile --- */
         @media (max-width: 768px) {
             .nav-logo { font-size: 1em; }
@@ -694,12 +815,15 @@
     <nav>
         <a href="/" class="nav-logo">PlateLab</a>
         <div class="nav-tabs">
+            <div class="nav-tabs-indicator" id="nav-indicator"></div>
             <a class="nav-tab active" data-tab="map">Map</a>
             <a class="nav-tab" data-tab="workbench">Workbench</a>
         </div>
+        <button class="nav-theme-toggle" id="theme-toggle" title="Toggle light/dark mode">&#9788;</button>
     </nav>
 
     <main>
+        <div id="view-map" class="view">
         <div class="map-container">
             <svg baseprofile="tiny" fill="#ececec" stroke="black" stroke-linecap="round"
                 stroke-linejoin="round" stroke-width=".1" version="1.2" viewBox="0 0 1000 684"
@@ -893,8 +1017,6 @@
             <button id="zoom-in" title="Zoom in">+</button>
             <button id="zoom-out" title="Zoom out">&minus;</button>
             <button id="zoom-reset" title="Reset zoom" style="font-size: 13px;">&#8634;</button>
-            <div class="divider"></div>
-            <button id="theme-toggle" title="Toggle light/dark mode" style="font-size: 15px;">&#9788;</button>
             <div class="accent-wrapper">
                 <div class="accent-drawer" id="accent-drawer">
                     <span class="accent-dot" data-accent="green" style="background:#4ac685;"></span>
@@ -905,6 +1027,20 @@
                     <span class="accent-dot" data-accent="black" data-mode="light" style="background:#000000;"></span>
                 </div>
                 <button id="accent-toggle" title="Change accent color" style="font-size: 18px;">&#9679;</button>
+            </div>
+        </div>
+        </div>
+
+        <div id="view-workbench" class="view" style="display:none;">
+            <div class="workbench">
+                <div class="workbench-controls">
+                    <div class="workbench-panel">
+                        <div class="workbench-panel-title">Workbench</div>
+                        <p class="workbench-placeholder">Plate customization coming soon...</p>
+                    </div>
+                </div>
+                <div class="workbench-preview">
+                </div>
             </div>
         </div>
 
@@ -1259,6 +1395,60 @@
             else if (savedAccent === "black" && !isLight) setAccent("white");
             else setAccent(savedAccent);
             updateAccentDotVisibility();
+
+            // --- Tab Switching ---
+            const navTabs = document.querySelectorAll('.nav-tab');
+            const viewMap = document.getElementById('view-map');
+            const viewWorkbench = document.getElementById('view-workbench');
+            const navIndicator = document.getElementById('nav-indicator');
+
+            function moveIndicator(tab, animate) {
+                if (!animate) navIndicator.style.transition = 'none';
+                navIndicator.style.width = tab.offsetWidth + 'px';
+                navIndicator.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+                if (!animate) requestAnimationFrame(() => { navIndicator.style.transition = ''; });
+            }
+
+            function switchTab(name) {
+                const currentView = viewMap.style.display === 'none' ? viewWorkbench : viewMap;
+                const nextView = name === 'map' ? viewMap : viewWorkbench;
+
+                navTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+                const activeTab = document.querySelector('.nav-tab.active');
+                if (activeTab) moveIndicator(activeTab, true);
+                location.hash = name;
+                if (name !== 'map') closePanel();
+
+                if (currentView === nextView) return;
+
+                currentView.classList.add('fading');
+                setTimeout(() => {
+                    currentView.style.display = 'none';
+                    currentView.classList.remove('fading');
+                    nextView.style.display = '';
+                    nextView.classList.add('fading');
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            nextView.classList.remove('fading');
+                        });
+                    });
+                }, 200);
+            }
+
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+
+            // Restore tab from URL hash on load
+            const initialTab = location.hash.replace('#', '') || 'map';
+            if (initialTab === 'workbench') {
+                viewMap.style.display = 'none';
+                viewWorkbench.style.display = '';
+                navTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === 'workbench'));
+            }
+            // Position indicator on initial active tab (no animation)
+            const initialActiveTab = document.querySelector('.nav-tab.active');
+            if (initialActiveTab) moveIndicator(initialActiveTab, false);
 
             // --- Country Panel ---
             const panel = document.getElementById("country-panel");

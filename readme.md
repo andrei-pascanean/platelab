@@ -19,3 +19,8 @@
 - [ ] auto-check if the created plate is available & link to gov site
 - [ ] get a better map that includes more countries and territories
 - [ ] show the map as a live sattelite image with cars driving on highways at night when zooming in
+- [ ] make dark/light toggle smoother
+
+## Ideas
+- preview license plate on a tesla
+- select the side strip to change the license plate design (country)
