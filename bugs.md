@@ -4,39 +4,6 @@ Discovered during code + data audit (2026-10-30). Organized by type and priority
 
 ---
 
-## Code Bugs
-
-### BUG-01 — Forbidden Combinations section never hides for null data
-**File:** `index.html` — `buildPanelHTML()`  
-**Severity:** Medium  
-The section always renders. When `forbidden_combinations` is `null` (no restrictions), the code falls to the `else` branch and outputs the text "None". Per the spec in `CLAUDE.md`, `null` means the section should be hidden entirely, the same way Vanity Plates is hidden.  
-**Affects:** 29 of 44 countries (all with `null` forbidden_combinations).  
-**Fix:** Wrap the entire Forbidden Combinations section in `if (isVal(pf.forbidden_combinations))`.
-
----
-
-### BUG-02 — `isVal()` doesn't catch the string `"None"`
-**File:** `index.html` — `isVal()` + `buildPanelHTML()`  
-**Severity:** Medium  
-`isVal()` guards against `null`, `"null"`, and `""`, but not the literal string `"None"`. Five countries have `strip_contents: "None"` in the JSON, which passes `isVal()` and renders the word "None" in the Side Strip field instead of hiding the field.  
-**Affects:** `CH`, `BA`, `GB`, `LI`, `PT`  
-**Fix:** Add `"None"` to the exclusion list in `isVal()`.
-
----
-
-### BUG-03 — `tagCodes()` false positives on contextual numbers
-**File:** `index.html` — `tagCodes()`  
-**Severity:** Low  
-The regex tags 3–4 digit numbers in explanatory prose, not just plate format codes. The existing currency guard (`€₴£$~kr`) only looks 3 characters before the number, so it misses values like "270 euros" or a standalone year like "2006".  
-**Affected fields and text:**
-- `HR` vanity: `270` (euros) gets tagged
-- `LV` vanity: `2006` (a year) gets tagged
-- `ES` format explanation: `9999` (range endpoint) gets tagged
-- `CY` format explanation: `001` and `999` (range endpoints) get tagged
-- `GR` format explanation: `1000` and `9999` (range endpoints) get tagged
-
----
-
 ## Data Bugs (`plate_formats.json`)
 
 ### BUG-04 — GB typeface is a bad AI extraction
