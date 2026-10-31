@@ -1,6 +1,56 @@
 # Bugs
 
-Discovered during code + data audit (2026-10-30). Organized by type and priority.
+Discovered during code + data audit (2026-10-30, updated 2026-10-31). Organized by type and priority.
+
+---
+
+## Code Bugs
+
+### BUG-C1 — `"Unknown"` and `"Not available"` render as real field values
+**File:** `index.html` — `isVal()`  
+**Severity:** High  
+`isVal()` was fixed to catch `"None"`, but `"Unknown"` and `"Not available"` still pass through and render as actual data in the panel. Typeface shows "Unknown" for 35 countries; vanity plates shows "Unknown" for 8. These fields should be hidden, not displayed.  
+**Fix:** Add `"Unknown"` and `"Not available"` to the exclusion list in `isVal()`.
+
+---
+
+### BUG-C2 — Escape key doesn't close the panel
+**File:** `index.html`  
+**Severity:** Medium  
+There is no `keydown` listener in the script. Pressing Escape while a country panel is open does nothing. Standard expectation for any overlay or slide-in panel.  
+**Fix:** Add a `keydown` listener that calls `closePanel()` when `key === "Escape"` and the panel is open.
+
+---
+
+### BUG-C3 — Portugal has a duplicate SVG path with `id="PT"`
+**File:** `index.html` — embedded SVG  
+**Severity:** Medium  
+There are 45 country paths for 44 countries; two paths share `id="PT"`. `getElementById` only returns the first, so panel highlighting and `centerOnCountry` silently ignore the second shape. Depending on which path is first, clicking part of Portugal may open the panel but not highlight or centre correctly.  
+**Fix:** Merge the two paths into one, or keep one `id="PT"` and give the other a non-interactive class.
+
+---
+
+### BUG-C4 — Viewport meta blocks user zoom (WCAG 1.4.4)
+**File:** `index.html` — `<meta name="viewport">`  
+**Severity:** Medium  
+The viewport tag includes `maximum-scale=1.0, user-scalable=no`. This prevents users from pinching to zoom the page on mobile, which violates WCAG 1.4.4 (Resize Text). The map manages its own touch zoom via custom gesture handlers, so these restrictions are not needed for the map to work.  
+**Fix:** Remove `maximum-scale=1.0` and `user-scalable=no` from the viewport meta tag.
+
+---
+
+### BUG-C5 — Map clicks during pan/zoom animation land on wrong country
+**File:** `index.html`  
+**Severity:** Medium  
+Opening a panel triggers `centerOnCountry()`, which animates the viewBox. If the user clicks during the animation the click coordinates no longer correspond to the intended country — in testing this opened Serbia when a neighbouring country was targeted.  
+**Fix:** Set a flag during `animateViewBox` and ignore country click/tap events until the animation completes.
+
+---
+
+### BUG-C6 — Mixed letter+digit tokens not chipped in format patterns
+**File:** `index.html` — `tagCodes()`  
+**Severity:** Low  
+`tagCodes()` matches `[A-Z]{1,3}` (letters only) or `\d{3,4}` (digits only), but not mixed tokens like `00A`. Sweden's second format pattern `AAA 00A` renders `AAA` chipped and `00A` unchipped, which looks inconsistent given the purpose of the chips.  
+**Fix:** Extend the regex to also match mixed alphanumeric tokens in the format `\d{1,2}[A-Z]` and `[A-Z]\d{1,2}`.
 
 ---
 
@@ -14,11 +64,11 @@ The AI copied the word "typeface" from a surrounding sentence. The correct value
 
 ---
 
-### BUG-05 — LV typeface value is ambiguous/wrong
+### BUG-05 — LV typeface value is wrong
 **Entry:** `LV`  
 **Field:** `typeface`  
 **Current value:** `"Austria"`  
-"Austria" appears to be a font name in the FE-Schrift family, but as a standalone value it reads like a country name and is almost certainly a misextraction. Needs manual verification against the Latvian plate spec.
+Confirmed extraction error. Latvia does not use a typeface called "Austria". Needs manual verification against the Latvian plate spec.
 
 ---
 
@@ -38,10 +88,10 @@ The explanation describes the first two letters as a municipality code, but the 
 ---
 
 ### BUG-08 — CZ format pattern doesn't match plate image
-**Entry:** `CZ` (Czech Republic)  
+**Entry:** `CZ` (Czechia)  
 **Field:** `format_pattern`  
 **Current value:** `"0AA 0000"`  
-The actual plate image shows a number followed by two letters first. The pattern and explanation need to be corrected to match the image.
+The actual plate image shows a number followed by two letters first. The pattern and explanation need to be corrected to match the image. Also: the entry name should be updated from "Czech Republic" to "Czechia".
 
 ---
 
@@ -74,13 +124,131 @@ The entry states that `C` and `K` are used for the Chișinău region code. This 
 
 ---
 
+### BUG-13 — NL format is outdated
+**Entry:** `NL` (Netherlands)  
+**Field:** `format_pattern`, `format_explanation`  
+**Current value:** `"A-000-AA"` (sidecode 10, introduced 2021)  
+Since 4 June 2024 new cars are issued sidecode 11: `AAA-00-A`. The Netherlands has 7 formats currently in use; the entry should reflect the current system. The explanation is also generic filler that doesn't describe the sidecode logic.  
+**Source:** [Alpina](https://www.alpina.nl/en/car-insurance/registration-mark/last-license-plate/), [Wikipedia](https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_the_Netherlands)
+
+---
+
+### BUG-14 — SI format pattern wrong
+**Entry:** `SI` (Slovenia)  
+**Field:** `format_pattern`, `format_explanation`  
+**Current value:** `"AA-0000-AA"`  
+Contradicts the site's own plate image (`LJ 898-KP`). The real format is a region code, a municipal crest, then 5 characters with a dash (e.g. `LJ 60-CFB`). Pattern and explanation both need rewriting.  
+**Source:** [openvan.camp](https://openvan.camp/en/license-plates/slovenia)
+
+---
+
+### BUG-15 — PT side strip is wrong
+**Entry:** `PT` (Portugal)  
+**Field:** `strip_contents`  
+**Current value:** `"None"`  
+Portugal has a blue EU band with the country code "P" on the left side. Only the yellow date band on the right was removed in 2020. The side strip is not "None".  
+**Source:** [Wikipedia](https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_Portugal)
+
+---
+
+### BUG-16 — DE format pattern contradicts its own explanation
+**Entry:** `DE` (Germany)  
+**Fields:** `format_pattern`, `format_explanation`  
+**Current value:** `"AA-AA-0000"`  
+The explanation correctly states the format uses 1–3 letters for the area code, 1–2 letters, and 1–4 digits — but the pattern shows a fixed `AA-AA-0000` with a dash after the area code that doesn't exist on real plates. The pattern should reflect the variable-length reality.
+
+---
+
+### BUG-17 — SK explanation is outdated
+**Entry:** `SK` (Slovakia)  
+**Field:** `format_explanation`  
+**Current value:** describes a "two-letter district code"  
+Slovakia moved to a state-wide (non-regional) numbering scheme in January 2023. The district code system is no longer used for new registrations.  
+**Source:** [Wikipedia mirror](https://wiki.krisyotam.com/content/wikipedia_en_all_nopic_2026-03/Slovak_car_registration_plates)
+
+---
+
+### BUG-18 — LT explanation contradicts the format pattern
+**Entry:** `LT` (Lithuania)  
+**Field:** `format_explanation`  
+**Pattern:** `"AAA 000"`  
+The explanation states there is "no space between" the letters and numbers, directly contradicting the pattern which has a space. One of the two is wrong.
+
+---
+
+### BUG-19 — Vanity plate prices quoted in obsolete currencies
+**Entries:** `LV` (Latvia), `HR` (Croatia), `BG` (Bulgaria)  
+**Field:** `vanity_plates`  
+- `LV` quotes a price in Latvian lats (LVL) — Latvia adopted the euro in 2014  
+- `HR` quotes a price in Croatian kuna — Croatia adopted the euro in 2023  
+- `BG` quotes a price in Bulgarian lev (BGN) — Bulgaria adopted the euro on 1 January 2026  
+
+All three prices should be converted to euros with an approximate current value.
+
+---
+
+### BUG-20 — EE vanity plates incorrectly marked as unavailable
+**Entry:** `EE` (Estonia)  
+**Field:** `vanity_plates`  
+**Current value:** `"Not available"`  
+The Estonian Transport Administration sells chosen plate numbers for €300. Personalized plates exist and are available.  
+**Source:** [Estonian Transport Administration fee list](https://dokumendiregistrid.karlerss.com/dokumendid/363938/kiri)
+
+---
+
+### BUG-21 — IE format pattern doesn't match the real format
+**Entry:** `IE` (Ireland)  
+**Field:** `format_pattern`  
+**Current value:** `"000-AA-000000"`  
+The real format is variable: the year part is 2 or 3 digits (e.g. `13` or `131`), the county code is 1 or 2 letters, and the sequence is 1–6 digits. The fixed pattern overstates precision.
+
+---
+
+### BUG-22 — FI dimensions are in the wrong order
+**Entry:** `FI` (Finland)  
+**Field:** `dimensions`  
+**Current value:** `"118 × 442 mm or 200 × 256 mm"`  
+Every other entry uses width × height. Finland's entry appears to use height × width (118 mm tall, 442 mm wide is the standard European plate). Should be `"442 × 118 mm or 256 × 200 mm"` to be consistent.
+
+---
+
+### BUG-23 — MK side strip incorrectly says "EU band"
+**Entry:** `MK` (North Macedonia)  
+**Field:** `colors_strip`, `strip_contents`  
+**Current value:** `"Blue EU band"`  
+North Macedonia is not an EU member. The strip is a national blue band with the country code `NMK`, not an EU identifier.
+
+---
+
+### BUG-24 — Alphabet rules placed in the wrong field for multiple countries
+**Entries:** `AT`, `GB`, `RS`, `RO`, `PL` (confirmed); likely others  
+**Field:** `forbidden_combinations`  
+These entries contain rules about which letters are excluded from the alphabet (e.g. AT: "The letter Q is excluded from all sequences"), not actual banned plate combinations. Alphabet restrictions belong in the `alphabet` field. The `forbidden_combinations` field should contain only specific banned sequences (e.g. `SS`, `NS`, `KZ`).
+
+---
+
+### BUG-25 — DE missing well-known forbidden combinations
+**Entry:** `DE` (Germany)  
+**Field:** `forbidden_combinations`  
+**Current value:** `null`  
+Germany has well-documented banned combinations due to Nazi associations: `NS`, `SS`, `SA`, `KZ`, `HJ` and several regional variants. The field should not be null.
+
+---
+
+### BUG-26 — FR forbidden combinations field mixes two separate concerns
+**Entry:** `FR` (France)  
+**Field:** `forbidden_combinations`  
+The entry conflates alphabet exclusions (I, O, U not used) with genuinely banned combinations (`SS`, `WW`), and then muddies it further by referencing superseded rules from an older system. These should be separated: excluded letters to `alphabet`, banned combinations to `forbidden_combinations`.
+
+---
+
 ## Incomplete Data (gaps, not bugs)
 
-### GAP-01 — 39 of 44 countries have `typeface: "Unknown"`
-Only `AM`, `CY`, `DE`, `GB`, `IS`, `LV`, `MD`, `RO`, `SI` have typeface data. Currently hidden in the UI by `isVal()`, which is correct behavior, but it's a significant content gap.
+### GAP-01 — 35 of 44 countries have `typeface: "Unknown"` which renders in the panel
+The `typeface` field contains the string `"Unknown"` for 35 countries. Because `"Unknown"` passes `isVal()`, it currently renders as actual data in the panel. Once BUG-C1 is fixed (adding "Unknown" to `isVal()`'s exclusion list), these fields will be correctly hidden. Top priority to fill in: `NL` (Kenteken font), `GB` (Charles Wright), `FR`, `DE`, `IT`.
 
-### GAP-02 — 8 countries have `vanity_plates: "Unknown"`
-`AD`, `AL`, `AM`, `BA`, `BY`, `CY`, `DE`, `MD` — also currently hidden in the UI. These are mostly smaller or non-EU countries where Wikipedia data was sparse.
+### GAP-02 — 8 countries have `vanity_plates: "Unknown"` which renders in the panel
+`AD`, `AL`, `AM`, `BA`, `BY`, `CY`, `DE`, `MD` — same issue as GAP-01. Will be hidden once BUG-C1 is fixed.
 
 ---
 
