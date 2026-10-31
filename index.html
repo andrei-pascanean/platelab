@@ -1527,14 +1527,12 @@
                 html += `</div>`;
 
                 // --- Forbidden Combinations ---
-                html += `<div class="panel-section"><div class="panel-section-title">Forbidden Combinations</div>`;
                 if (isVal(pf.forbidden_combinations)) {
+                    html += `<div class="panel-section"><div class="panel-section-title">Forbidden Combinations</div>`;
                     const fcText = Array.isArray(pf.forbidden_combinations) ? pf.forbidden_combinations.join(", ") : pf.forbidden_combinations;
                     html += `<div class="panel-field-value">${tagCodes(fcText)}</div>`;
-                } else {
-                    html += `<div class="panel-field-value">None</div>`;
+                    html += `</div>`;
                 }
-                html += `</div>`;
 
                 // --- Vanity Plates ---
                 if (isVal(pf.vanity_plates)) {
