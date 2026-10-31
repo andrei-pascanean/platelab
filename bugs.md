@@ -6,46 +6,6 @@ Discovered during code + data audit (2026-10-30, updated 2026-10-31). Organized 
 
 ## Code Bugs
 
-### BUG-C1 — `"Unknown"` and `"Not available"` render as real field values
-**File:** `index.html` — `isVal()`  
-**Severity:** High  
-`isVal()` was fixed to catch `"None"`, but `"Unknown"` and `"Not available"` still pass through and render as actual data in the panel. Typeface shows "Unknown" for 35 countries; vanity plates shows "Unknown" for 8. These fields should be hidden, not displayed.  
-**Fix:** Add `"Unknown"` and `"Not available"` to the exclusion list in `isVal()`.
-
----
-
-### BUG-C2 — Escape key doesn't close the panel
-**File:** `index.html`  
-**Severity:** Medium  
-There is no `keydown` listener in the script. Pressing Escape while a country panel is open does nothing. Standard expectation for any overlay or slide-in panel.  
-**Fix:** Add a `keydown` listener that calls `closePanel()` when `key === "Escape"` and the panel is open.
-
----
-
-### BUG-C3 — Portugal has a duplicate SVG path with `id="PT"`
-**File:** `index.html` — embedded SVG  
-**Severity:** Medium  
-There are 45 country paths for 44 countries; two paths share `id="PT"`. `getElementById` only returns the first, so panel highlighting and `centerOnCountry` silently ignore the second shape. Depending on which path is first, clicking part of Portugal may open the panel but not highlight or centre correctly.  
-**Fix:** Merge the two paths into one, or keep one `id="PT"` and give the other a non-interactive class.
-
----
-
-### BUG-C4 — Viewport meta blocks user zoom (WCAG 1.4.4)
-**File:** `index.html` — `<meta name="viewport">`  
-**Severity:** Medium  
-The viewport tag includes `maximum-scale=1.0, user-scalable=no`. This prevents users from pinching to zoom the page on mobile, which violates WCAG 1.4.4 (Resize Text). The map manages its own touch zoom via custom gesture handlers, so these restrictions are not needed for the map to work.  
-**Fix:** Remove `maximum-scale=1.0` and `user-scalable=no` from the viewport meta tag.
-
----
-
-### BUG-C5 — Map clicks during pan/zoom animation land on wrong country
-**File:** `index.html`  
-**Severity:** Medium  
-Opening a panel triggers `centerOnCountry()`, which animates the viewBox. If the user clicks during the animation the click coordinates no longer correspond to the intended country — in testing this opened Serbia when a neighbouring country was targeted.  
-**Fix:** Set a flag during `animateViewBox` and ignore country click/tap events until the animation completes.
-
----
-
 ### BUG-C6 — Mixed letter+digit tokens not chipped in format patterns
 **File:** `index.html` — `tagCodes()`  
 **Severity:** Low  
